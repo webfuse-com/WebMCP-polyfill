@@ -3,10 +3,13 @@
   "version": "0.1.0",
   "author": "Thassilo M. Schiepanski",
   "type": "module",
-  "main": "index.js",
+  "main": "./dist/api.js",
+  "types": "./dist/types/api.d.ts",
   "scripts": {
-    "build": "npx esbuild ./src/api.ts --bundle --outfile=./dist/webmcp-polyfill.js",
-    "build:watch": "npm run build -- --watch",
+    "build:lib": "npx esbuild ./src/api.ts --bundle --outfile=./dist/api.js --platform=node --packages=external --format=esm --target=es2022",
+    "build:lib:watch": "npm run build:lib -- --watch",
+    "build:browser": "npx esbuild ./src/api.ts --bundle --outfile=./dist/webmcp-polyfill.js",
+    "build:browser:watch": "npm run build:browser -- --watch",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
