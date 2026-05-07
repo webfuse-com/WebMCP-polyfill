@@ -10,6 +10,8 @@
     "build:lib:watch": "npm run build:lib -- --watch",
     "build:browser": "npx esbuild ./src/api.ts --bundle --outfile=./dist/webmcp-polyfill.js",
     "build:browser:watch": "npm run build:browser -- --watch",
+    "build:types": "npx tsc",
+    "build": "npm run build:lib && npm run build:types && npm run build:browser",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -21,6 +23,7 @@
   },
   "homepage": "https://github.com/webfuse-com/WebMCP-polyfill#readme",
   "devDependencies": {
-    "esbuild": "^0.28.0"
+    "esbuild": "^0.28.0",
+    "typescript": "^6.0.3"
   }
 }
