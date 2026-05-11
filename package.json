@@ -6,6 +6,7 @@
   "main": "./dist/api.js",
   "types": "./dist/types/api.lib.d.ts",
   "scripts": {
+    "prepare": "husky",
     "build:lib": "npx esbuild ./src/api.lib.ts --bundle --outfile=./dist/api.lib.js --platform=node --packages=external --format=esm --target=es2022",
     "build:lib:watch": "npm run build:lib -- --watch",
     "build:browser": "npx esbuild ./src/api.browser.ts --bundle --outfile=./dist/webmcp-polyfill.js",
@@ -28,6 +29,7 @@
   "devDependencies": {
     "@types/node": "^25.6.2",
     "esbuild": "^0.28.0",
+    "husky": "^9.1.7",
     "puppeteer": "^24.43.1",
     "typescript": "^6.0.3"
   }

@@ -8,7 +8,7 @@ const HEADLESS = !ARGUMENTS.includes("--no-headless");
 const KEEPALIVE = ARGUMENTS.includes("--keepalive");
 
 
-async function runBrowser(url, inPageCallback, inPageCallbackArgs = [], options = {}) {
+async function runBrowser(url, inPageCallback, options = {}) {
     const optionsWithDefaults = {
         viewport: [ 800, 600 ],
         headless: true,
@@ -30,15 +30,15 @@ async function runBrowser(url, inPageCallback, inPageCallbackArgs = [], options 
     const page = (await browser.pages())[0];
 
     page.on("domcontentloaded", async () => {
-        page.evaluate(inPageCallback, ...inPageCallbackArgs);
+        await page.evaluate(inPageCallback);
+
+        !optionsWithDefaults.keepalive
+            && await browser.close();
     });
 
     await page.goto(url, {
         waitUntil: "load"
     });
-
-    !optionsWithDefaults.keepalive
-        && await browser.close();
 }
 
 
@@ -136,7 +136,7 @@ await runBrowser(
         })
         ok(WebMCP.has("unknown_tool"), "Did still not find 'unknown_tool' tool in registry after registration");
         ok((await WebMCP.invoke("unknown_tool")) === "Hello world!", "Invalid result received via 'unknown_tool'");
-    }, [], {
+    }, {
         headless: HEADLESS,
         keepalive: KEEPALIVE
     });
