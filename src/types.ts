@@ -3,7 +3,6 @@ import { type ModelContextClient } from "./ModelContextClient.js";
 
 // SPEC:
 
-
 export type UserInteractionCallback = () => Promise<unknown> | unknown;
 
 export type ToolExecuteCallback = (input: object, client: ModelContextClient) => Promise<unknown> | unknown;
