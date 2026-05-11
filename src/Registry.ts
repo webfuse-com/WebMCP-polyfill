@@ -47,6 +47,33 @@ export class Registry implements ToolRegistry {
         return toolDefinitionSnapshots;
     }
 
+    public setUnsafe(tool: ModelContextTool) {
+        let serializedInputSchema: string = "";
+        if(tool.inputSchema !== undefined) {
+            serializedInputSchema = JSON.stringify(tool.inputSchema);
+
+            if(serializedInputSchema === undefined) {
+                throw new TypeError(
+                    "Tool input schema serialized to undefined"
+                );
+            }
+        }
+
+        const readOnlyHint: boolean = !!(tool.annotations && tool.annotations.readOnlyHint);
+        const untrustedContentHint: boolean = !!(tool.annotations && tool.annotations.untrustedContentHint);
+
+        this.#toolMap
+            .set(tool.name, {
+                name: tool.name,
+                title: tool.title ?? null,
+                description: tool.description,
+                inputSchema: serializedInputSchema,
+                execute: tool.execute,
+                readOnlyHint,
+                untrustedContentHint
+            });
+    }
+
     public set(tool: ModelContextTool) {
         if(
             (typeof(tool.name) !== "string")
@@ -78,29 +105,8 @@ export class Registry implements ToolRegistry {
                 `Invalid tool name '${tool.name}' (must only use 1-128 ASCII alphanumeric characters, '_', '-', or '.'`
             );
         }
-        let serializedInputSchema: string = "";
-        if(tool.inputSchema !== undefined) {
-            serializedInputSchema = JSON.stringify(tool.inputSchema);
-            if(serializedInputSchema === undefined) {
-                throw new TypeError(
-                    "Tool input schema serialized to undefined"
-                );
-            }
-        }
 
-        const readOnlyHint: boolean = !!(tool.annotations && tool.annotations.readOnlyHint);
-        const untrustedContentHint: boolean = !!(tool.annotations && tool.annotations.untrustedContentHint);
-
-        this.#toolMap
-            .set(tool.name, {
-                name: tool.name,
-                title: tool.title ?? null,
-                description: tool.description,
-                inputSchema: serializedInputSchema,
-                execute: tool.execute,
-                readOnlyHint,
-                untrustedContentHint
-            });
+        this.setUnsafe(tool);
     }
  
     public get(name: string): RegisteredTool | undefined {
