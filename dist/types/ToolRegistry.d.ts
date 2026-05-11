@@ -1,5 +1,5 @@
 import { type RegisteredTool, type ModelContextTool, type ModelContextTesting } from "./types.ts";
-export declare class ToolRegistry implements ModelContextTesting {
+export declare class ToolRegistry extends EventTarget implements ModelContextTesting {
     #private;
     __setUnsafe(tool: ModelContextTool): void;
     __set(tool: ModelContextTool): void;

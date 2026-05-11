@@ -42,7 +42,8 @@ export interface ToolDefinition {
 
 export type RegisteredTool = Omit<ToolDefinition, "execute">;
 
-export interface ModelContextTesting {
+export interface ModelContextTesting extends EventTarget {
     listTools(): RegisteredTool[];
     executeTool(name: string, input?: object): Promise<unknown>;
+    addEventListener(type: "toolchange", listener: (e: Event) => void): void;
 }

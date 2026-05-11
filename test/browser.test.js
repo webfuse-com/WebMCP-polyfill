@@ -52,6 +52,10 @@ await runBrowser(
             if(!assertion) throw new Error(message);
         };
 
+        let toolChanges = 0;
+        navigator.modelContextTesting
+            .addEventListener("toolchange", () => toolChanges++);
+
         ok(
             objsEqual(
                 navigator.modelContextTesting.listTools(),
@@ -150,6 +154,11 @@ await runBrowser(
         ok(
             (await navigator.modelContextTesting.executeTool("unknown_tool")) === "Hello world!",
             "Invalid result received via 'unknown_tool'"
+        );
+
+        ok(
+            toolChanges === 2,
+            "Invalid tool changes count (tracked via 'toolchange' listener)"
         );
     }, {
         headless: HEADLESS,

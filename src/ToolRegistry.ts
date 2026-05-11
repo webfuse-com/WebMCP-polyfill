@@ -5,7 +5,7 @@ import { ModelContextClient } from "./ModelContextClient.ts";
 const TOOL_NAME_REGEX: RegExp = /^[A-Za-z0-9_\-.]+$/;
 
 
-export class ToolRegistry implements ModelContextTesting {
+export class ToolRegistry extends EventTarget implements ModelContextTesting {
     static #isValidToolName(name: unknown): boolean {
         return (
             (typeof(name) === "string")
@@ -36,6 +36,10 @@ export class ToolRegistry implements ModelContextTesting {
 
     readonly #toolMap: Map<string, ToolDefinition> = new Map();
 
+    #emitToolChange() {
+        this.dispatchEvent(new Event("toolchange"));
+    }
+
     public __setUnsafe(tool: ModelContextTool) {
         let serializedInputSchema: string = "";
         if(tool.inputSchema !== undefined) {
@@ -61,6 +65,8 @@ export class ToolRegistry implements ModelContextTesting {
                 readOnlyHint,
                 untrustedContentHint
             });
+
+        this.#emitToolChange();
     }
 
     public __set(tool: ModelContextTool) {
@@ -111,7 +117,9 @@ export class ToolRegistry implements ModelContextTesting {
     }
 
     public __delete(name: string) {
-        this.#toolMap.delete(name);
+        if(this.#toolMap.delete(name)) {
+            this.#emitToolChange();
+        }
     }
 
     public listTools(): RegisteredTool[] {

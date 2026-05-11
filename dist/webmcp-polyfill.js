@@ -30,7 +30,7 @@
 
   // src/ToolRegistry.ts
   var TOOL_NAME_REGEX = /^[A-Za-z0-9_\-.]+$/;
-  var ToolRegistry = class _ToolRegistry {
+  var ToolRegistry = class _ToolRegistry extends EventTarget {
     static #isValidToolName(name) {
       return typeof name === "string" && name.length >= 1 && name.length <= 128 && TOOL_NAME_REGEX.test(name);
     }
@@ -48,6 +48,9 @@
       return rest;
     }
     #toolMap = /* @__PURE__ */ new Map();
+    #emitToolChange() {
+      this.dispatchEvent(new Event("toolchange"));
+    }
     __setUnsafe(tool) {
       let serializedInputSchema = "";
       if (tool.inputSchema !== void 0) {
@@ -69,6 +72,7 @@
         readOnlyHint,
         untrustedContentHint
       });
+      this.#emitToolChange();
     }
     __set(tool) {
       if (typeof tool.name !== "string" || tool.name.length === 0) {
@@ -105,7 +109,9 @@
       return this.#toolMap.has(name);
     }
     __delete(name) {
-      this.#toolMap.delete(name);
+      if (this.#toolMap.delete(name)) {
+        this.#emitToolChange();
+      }
     }
     listTools() {
       const toolDefinitionSnapshots = [];
