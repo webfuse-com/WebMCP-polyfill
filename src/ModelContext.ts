@@ -1,11 +1,14 @@
 import { type ModelContextRegisterToolOptions, type ModelContextTool, type ToolDefinition } from "./types.ts";
 
 
+type ToolMap = Map<string, ToolDefinition>;
+
+
 const TOOL_NAME_REGEX: RegExp = /^[A-Za-z0-9_\-.]+$/;
 
 
 export class ModelContext {
-    readonly #toolMap = new Map<string, ToolDefinition>();
+    readonly #toolMap: ToolMap = new Map();
 
     private static isValidToolName(name: unknown): boolean {
         return (
@@ -24,6 +27,14 @@ export class ModelContext {
         err.name = name;
 
         throw err;
+    }
+
+    /**
+     * Internal accessor for tool map of a given ModelContext.
+     * Exposed statically, so controlled registries can read tools without loading the spec-compliant public API.
+     */
+    public static getInternalToolMap(context: ModelContext): ToolMap {
+        return context.#toolMap;
     }
 
     public registerTool(tool: ModelContextTool, options: ModelContextRegisterToolOptions = {}) {

@@ -1,6 +1,9 @@
 import { type ModelContextClient } from "./ModelContextClient.js";
 
 
+// SPEC:
+
+
 export type UserInteractionCallback = () => Promise<unknown> | unknown;
 
 export type ToolExecuteCallback = (input: object, client: ModelContextClient) => Promise<unknown> | unknown;
@@ -33,4 +36,23 @@ export interface ToolDefinition {
     execute: ToolExecuteCallback;
     readOnlyHint: boolean;
     untrustedContentHint: boolean;
+}
+
+
+// NON-SPEC:
+
+export interface RegisteredTool {
+    name: string;
+    title: string | null;
+    description: string;
+    inputSchema: string;
+    readOnlyHint: boolean;
+    untrustedContentHint: boolean;
+}
+
+export interface ToolRegistry {
+    list(): RegisteredTool[];
+    get(name: string): RegisteredTool | undefined;
+    has(name: string): boolean;
+    invoke(name: string, input?: object): Promise<unknown>;
 }
