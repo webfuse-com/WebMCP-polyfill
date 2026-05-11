@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "author": "Thassilo M. Schiepanski",
   "type": "module",
-  "main": "./dist/api.js",
+  "main": "./dist/api.lib.js",
   "types": "./dist/types/api.lib.d.ts",
   "scripts": {
     "prepare": "husky",

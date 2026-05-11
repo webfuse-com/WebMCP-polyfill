@@ -133,6 +133,10 @@ await runBrowser(
             ),
             "Invalid result adding product via 'add_product_to_cart'"
         );
+        ok(
+            objsEqual(window.state.cart.productIDs, [ "172" ]),
+            "Invalid result received via 'unknown_tool'"
+        );
 
         navigator.modelContextTesting.__delete("get_products");
         ok(
