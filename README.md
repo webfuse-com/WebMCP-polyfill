@@ -1,6 +1,6 @@
 # WebMCP polyfill
 
-[WebMCP Draft (23 April 2026)](https://webmachinelearning.github.io/webmcp) compliant API polyfill:
+[WebMCP Draft (23 April 2026)](https://webmachinelearning.github.io/webmcp) compliant API polyfill.
 
 - `ModelContext`
 - `ModelContextClient`
@@ -21,8 +21,65 @@ npm install webfuse-com/WebMCP-polyfill
 ```
 
 ``` js
-import {
-    ModelContext,
-    ModelContextClient
-} "@webfuse-com/webmcp-polyfill";
+import { ModelContext, ModelContextClient } from "@webfuse-com/webmcp-polyfill";
+```
+
+### Usage
+
+``` js
+navigator.modelContext
+  .registerTool({
+    name: "get_products",
+    description: "List all products in the current page.",
+    annotations: { readOnlyHint: true },
+    execute: () => state.getProducts()
+  })
+
+navigator.modelContext
+  .registerTool({
+    name: "add_product_to_cart",
+    description: "Add a product to the user's shopping cart.",
+    inputSchema: {
+      type: "object",
+      properties: { product_id: { type: "string" } },
+      required: [ "product_id" ]
+    },
+    execute: async ({ product_id }) => {
+      await state.cart.addToCart(product_id);
+      return {
+        ok: true,
+        product_id
+      }
+    }
+  })
+```
+
+#### WebMCP Registry `non-spec`
+
+The `WebMCP` global allows maintaining an [_AI agent queue_](https://webmachinelearning.github.io/webmcp/#ai-agent-queue) right in the web page's script execution scope.
+
+``` ts
+interface RegisteredTool {
+  name: string;
+  title: string | null;
+  description: string;
+  inputSchema: string;
+  readOnlyHint: boolean;
+  untrustedContentHint: boolean;
+}
+
+interface WebMCP {
+  // List snapshot for each registered tool.
+  list(): RegisteredTool[];
+  // Register a tool directly, bypassing 'navigator.modelContext'.
+  set(tool: ModelContextTool): void;
+  // Get a tool by name up a tool by name.
+  get(name: string): RegisteredTool | undefined;
+  // Check whether a tool has been registered.
+  has(name: string): boolean;
+  // Unregister a tool by name.
+  delete(name: string): void;
+  // Invoke a registered tool.
+  invoke(name: string, input?: object): Promise<unknown>;
+}
 ```
