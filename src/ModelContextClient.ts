@@ -1,5 +1,8 @@
+import { type UserInteractionCallback } from "./types.js";
+
+
 export class ModelContextClient {
-    async requestUserInteraction(cb: () => unknown | Promise<unknown>): Promise<unknown> {
-        return await cb();
+    async requestUserInteraction(callback: UserInteractionCallback): Promise<unknown> {
+        return await callback();
     }
 }
