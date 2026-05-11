@@ -83,3 +83,14 @@ interface WebMCP {
   invoke(name: string, input?: object): Promise<unknown>;
 }
 ```
+
+### Use Cases
+
+- **Model-driven Browser Automation**  
+Use WebMCP tools through a browser automation framework (e.g., [Playwright](https://playwright.dev)), including legacy browsers.
+
+- **First-class access from browser extensions**  
+Use WebMCP tools from native browser extensions.
+
+- **Webpage MCP Introspection**  
+Reuse WebMCP tools for in-page script execution realms.
