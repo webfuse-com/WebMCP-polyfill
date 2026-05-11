@@ -56,7 +56,11 @@ navigator.modelContext
 
 #### WebMCP Registry `non-spec`
 
-The `WebMCP` global allows maintaining an [_AI agent queue_](https://webmachinelearning.github.io/webmcp/#ai-agent-queue) right in the web page's script execution scope.
+The experimental `navigator.modelContextTesting` global allows maintaining an [_AI agent queue_](https://webmachinelearning.github.io/webmcp/#ai-agent-queue) right in the web page's script execution scope.
+
+``` ts
+navigator.modelContextTesting: ModelContextTesting
+```
 
 ``` ts
 interface RegisteredTool {
@@ -68,19 +72,13 @@ interface RegisteredTool {
   untrustedContentHint: boolean;
 }
 
-interface WebMCP {
+interface ModelContextTesting extends EventTarget {
   // List snapshot for each registered tool.
-  list(): RegisteredTool[];
-  // Register a tool directly, bypassing 'navigator.modelContext'.
-  set(tool: ModelContextTool): void;
-  // Get a tool by name up a tool by name.
-  get(name: string): RegisteredTool | undefined;
-  // Check whether a tool has been registered.
-  has(name: string): boolean;
-  // Unregister a tool by name.
-  delete(name: string): void;
+  listTools(): RegisteredTool[];
   // Invoke a registered tool.
-  invoke(name: string, input?: object): Promise<unknown>;
+  executeTool(name: string, input?: object | string): Promise<unknown>;
+  // Listen for tool changes.
+  addEventListener(type: "toolchange", listener: (e: Event) => void): void;
 }
 ```
 
