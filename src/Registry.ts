@@ -54,7 +54,7 @@ export class Registry implements ToolRegistry {
         ) {
             Registry.throwDOMException(
                 "InvalidStateError",
-                "Tool name must be a non-empty string."
+                "Tool name must be a non-empty string"
             );
         }
         if(
@@ -63,13 +63,13 @@ export class Registry implements ToolRegistry {
         ) {
             Registry.throwDOMException(
                 "InvalidStateError",
-                "Tool description must be a non-empty string."
+                "Tool description must be a non-empty string"
             );
         }
         if(this.#toolMap.has(tool.name)) {
             Registry.throwDOMException(
                 "InvalidStateError",
-                `Tool named '${tool.name}' is already registered.`
+                `Tool named '${tool.name}' is already registered`
             );
         }
         if(!Registry.isValidToolName(tool.name)) {
@@ -83,7 +83,7 @@ export class Registry implements ToolRegistry {
             serializedInputSchema = JSON.stringify(tool.inputSchema);
             if(serializedInputSchema === undefined) {
                 throw new TypeError(
-                    "Registry.add: tool.inputSchema serialized to undefined."
+                    "Tool input schema serialized to undefined"
                 );
             }
         }
@@ -113,6 +113,10 @@ export class Registry implements ToolRegistry {
 
     public has(name: string): boolean {
         return this.#toolMap.has(name);
+    }
+
+    public delete(name: string): void {
+        this.#toolMap.delete(name);
     }
 
     public async invoke(name: string, input: object = {}): Promise<unknown> {

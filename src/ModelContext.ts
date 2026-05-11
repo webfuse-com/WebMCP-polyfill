@@ -18,10 +18,12 @@ export class ModelContext {
             return;
         }
 
-        this.#registry.add(tool);
+        this.#registry.set(tool);
 
         if(signal) {
-            signal.addEventListener("abort", () => this.#registry.remove(tool.name), { once: true });
+            signal.addEventListener("abort", () => {
+                this.#registry.delete(tool.name);
+            }, { once: true });
         }
     }
 }
