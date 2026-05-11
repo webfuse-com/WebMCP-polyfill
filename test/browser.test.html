@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>WebMCP</title>
+        <script src="../dist/webmcp-polyfill.js"></script>
+    </head>
+    <body>
+        <h1>WebMCP</h1>
+        <script>
+            window.state = {
+                cart: {
+                    productIDs: [],
+                    async addToCart(productID) {
+                        // ...
+                        window.state.cart.productIDs
+                            .push(productID);
+                    },
+                    getCart() {
+                        return state.productIDs;
+                    }
+                },
+                getProducts() {
+                    return [
+                        {
+                            id: "170",
+                            name: "Self-Lacing Sneakers"
+                        },
+                        {
+                            id: "171",
+                            name: "Food Hydrator"
+                        },
+                        {
+                            id: "172",
+                            name: "Hoverboard"
+                        }
+                    ]
+                }
+            };
+        </script>
+        <script>
+            navigator.modelContext
+                .registerTool({
+                    name: "get_products",
+                    description: "List all products in the current page.",
+                    annotations: { readOnlyHint: true },
+                    execute: () => state.getProducts()
+                });
+
+            navigator.modelContext
+                .registerTool({
+                    name: "add_product_to_cart",
+                    description: "Add a product to the user's shopping cart.",
+                    inputSchema: {
+                    type: "object",
+                    properties: { product_id: { type: "string" } },
+                    required: [ "product_id" ]
+                },
+                execute: async ({ product_id }) => {
+                    await state.cart.addToCart(product_id);
+                    return {
+                        ok: true,
+                        product_id
+                    };
+                }
+            });
+        </script>
+    </body>
+</html>

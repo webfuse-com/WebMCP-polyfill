@@ -12,7 +12,10 @@
     "build:browser:watch": "npm run build:browser -- --watch",
     "build:types": "npx tsc",
     "build": "npm run build:lib && npm run build:types && npm run build:browser",
-    "test": "node --experimental-strip-types --no-warnings --test './test/test.ts'"
+    "test:lib": "node --experimental-strip-types --no-warnings --test './test/lib.test.ts'",
+    "test:browser": "node ./test/browser.test.js",
+    "test:browser:debug": "npm run test:browser -- --no-headless --keepalive",
+    "test": "npm run test:lib && npm run test:browser"
   },
   "repository": {
     "type": "git",
@@ -25,6 +28,7 @@
   "devDependencies": {
     "@types/node": "^25.6.2",
     "esbuild": "^0.28.0",
+    "puppeteer": "^24.43.1",
     "typescript": "^6.0.3"
   }
 }

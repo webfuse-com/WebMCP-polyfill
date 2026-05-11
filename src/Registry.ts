@@ -121,7 +121,7 @@ export class Registry implements ToolRegistry {
         return this.#toolMap.has(name);
     }
 
-    public delete(name: string): void {
+    public delete(name: string) {
         this.#toolMap.delete(name);
     }
 

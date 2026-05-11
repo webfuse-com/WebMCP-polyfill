@@ -35,7 +35,9 @@ export interface RegisteredTool {
 }
 export interface ToolRegistry {
     list(): RegisteredTool[];
+    set(tool: ModelContextTool): void;
     get(name: string): RegisteredTool | undefined;
     has(name: string): boolean;
+    delete(name: string): void;
     invoke(name: string, input?: object): Promise<unknown>;
 }

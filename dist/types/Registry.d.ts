@@ -1,10 +1,13 @@
-import { type RegisteredTool, type ToolRegistry } from "./types.ts";
-import { ModelContext } from "./ModelContext.ts";
+import { type RegisteredTool, type ToolRegistry, type ModelContextTool } from "./types.ts";
 export declare class Registry implements ToolRegistry {
     #private;
-    constructor(context: ModelContext);
+    private static isValidToolName;
+    private static throwDOMException;
     list(): RegisteredTool[];
+    setUnsafe(tool: ModelContextTool): void;
+    set(tool: ModelContextTool): void;
     get(name: string): RegisteredTool | undefined;
     has(name: string): boolean;
+    delete(name: string): void;
     invoke(name: string, input?: object): Promise<unknown>;
 }

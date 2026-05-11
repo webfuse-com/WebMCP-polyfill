@@ -33,7 +33,7 @@ navigator.modelContext
     description: "List all products in the current page.",
     annotations: { readOnlyHint: true },
     execute: () => state.getProducts()
-  })
+  });
 
 navigator.modelContext
   .registerTool({
@@ -49,9 +49,9 @@ navigator.modelContext
       return {
         ok: true,
         product_id
-      }
+      };
     }
-  })
+  });
 ```
 
 #### WebMCP Registry `non-spec`
@@ -86,11 +86,14 @@ interface WebMCP {
 
 ### Use Cases
 
-- **Model-driven Browser Automation**  
+#### Model-driven Browser Automation
+
 Use WebMCP tools through a browser automation framework (e.g., [Playwright](https://playwright.dev)), including legacy browsers.
 
-- **First-class access from browser extensions**  
+#### First-class access from browser extensions
+
 Use WebMCP tools from native browser extensions.
 
-- **Webpage MCP Introspection**  
+#### Webpage MCP Introspection
+
 Reuse WebMCP tools for in-page script execution realms.
