@@ -4,11 +4,11 @@ import { ok, equal, deepEqual, throws, doesNotThrow, rejects } from "node:assert
 import { type ModelContextTool } from "../src/types.ts";
 import { ModelContext } from "../src/ModelContext.ts";
 import { ModelContextClient } from "../src/ModelContextClient.ts";
-import { Registry } from "../src/Registry.ts";
+import { ToolRegistry } from "../src/ToolRegistry.ts";
 
 
 function createContext() {
-    const registry = new Registry();
+    const registry = new ToolRegistry();
 
     return {
         context: new ModelContext(registry),
@@ -33,9 +33,9 @@ describe("ModelContext.registerTool (success)", () => {
 
         context.registerTool(defineDummyTool());
 
-        equal(registry.has("do_something"), true);
-        equal(registry.list().length, 1);
-        equal(registry.get("do_something")?.name, "do_something");
+        equal(registry.__has("do_something"), true);
+        equal(registry.listTools().length, 1);
+        equal(registry.__get("do_something")?.name, "do_something");
     });
 
     it("Stores description verbatim", () => {
@@ -43,7 +43,7 @@ describe("ModelContext.registerTool (success)", () => {
 
         context.registerTool(defineDummyTool({ description: "verbatim description" }));
 
-        equal(registry.get("do_something")?.description, "verbatim description");
+        equal(registry.__get("do_something")?.description, "verbatim description");
     });
 
     it("Captures title when provided, null otherwise", () => {
@@ -52,8 +52,8 @@ describe("ModelContext.registerTool (success)", () => {
         context.registerTool(defineDummyTool({ name: "foo", title: "'foo' is a metasyntactic variable" }));
         context.registerTool(defineDummyTool({ name: "bar" }));
 
-        equal(registry.get("foo")?.title, "'foo' is a metasyntactic variable");
-        equal(registry.get("bar")?.title, null);
+        equal(registry.__get("foo")?.title, "'foo' is a metasyntactic variable");
+        equal(registry.__get("bar")?.title, null);
     });
 
     it("Stringifies input schema", () => {
@@ -67,7 +67,7 @@ describe("ModelContext.registerTool (success)", () => {
 
         context.registerTool(defineDummyTool({ inputSchema: schema }));
 
-        const stored = registry.get("do_something")!.inputSchema;
+        const stored = registry.__get("do_something")!.inputSchema;
 
         equal(typeof stored, "string");
         deepEqual(JSON.parse(stored), schema);
@@ -78,7 +78,7 @@ describe("ModelContext.registerTool (success)", () => {
 
         context.registerTool(defineDummyTool());
 
-        equal(registry.get("do_something")?.inputSchema, "");
+        equal(registry.__get("do_something")?.inputSchema, "");
     });
 
     it("Captures annotation hints, defaulting to false", () => {
@@ -92,8 +92,8 @@ describe("ModelContext.registerTool (success)", () => {
         );
         context.registerTool(defineDummyTool({ name: "plain" }));
 
-        const ro = registry.get("readonly")!;
-        const plain = registry.get("plain")!;
+        const ro = registry.__get("readonly")!;
+        const plain = registry.__get("plain")!;
 
         equal(ro.readOnlyHint, true);
         equal(ro.untrustedContentHint, true);
@@ -200,7 +200,7 @@ describe("ModelContext.registerTool (failure: validation)", () => {
                 execute: "non-function" as any
             })
         );
-        equal(registry.has("foo"), true);
+        equal(registry.__has("foo"), true);
     });
 });
 
@@ -211,11 +211,11 @@ describe("ModelContext.registerTool (failure: abort signal)", () => {
 
         context.registerTool(defineDummyTool(), { signal: ac.signal });
 
-        equal(registry.has("do_something"), true);
+        equal(registry.__has("do_something"), true);
 
         ac.abort();
 
-        equal(registry.has("do_something"), false);
+        equal(registry.__has("do_something"), false);
     });
 
     it("Does not register when signal is already aborted", () => {
@@ -226,7 +226,7 @@ describe("ModelContext.registerTool (failure: abort signal)", () => {
 
         context.registerTool(defineDummyTool(), { signal: ac.signal });
 
-        equal(registry.has("do_something"), false);
+        equal(registry.__has("do_something"), false);
     });
 
     it("Does not affect other tools when one signal aborts", () => {
@@ -238,8 +238,8 @@ describe("ModelContext.registerTool (failure: abort signal)", () => {
 
         ac.abort();
 
-        equal(registry.has("transient"), false);
-        equal(registry.has("permanent"), true);
+        equal(registry.__has("transient"), false);
+        equal(registry.__has("permanent"), true);
     });
 
     it("Allows the same name to be re-registered after abort", () => {
@@ -251,7 +251,7 @@ describe("ModelContext.registerTool (failure: abort signal)", () => {
         ac.abort();
 
         doesNotThrow(() => context.registerTool(defineDummyTool()));
-        equal(registry.has("do_something"), true);
+        equal(registry.__has("do_something"), true);
     });
 });
 
@@ -259,15 +259,15 @@ describe("ToolRegistry", () => {
     it("list() reflects current registry", () => {
         const { context, registry } = createContext();
 
-        equal(registry.list().length, 0);
+        equal(registry.listTools().length, 0);
 
         context.registerTool(defineDummyTool({ name: "foo" }));
         context.registerTool(defineDummyTool({ name: "bar" }));
 
-        equal(registry.list().length, 2);
+        equal(registry.listTools().length, 2);
 
         deepEqual(
-            registry.list().map(t => t.name),
+            registry.listTools().map(t => t.name),
             [ "foo", "bar" ]
         );
     });
@@ -275,10 +275,10 @@ describe("ToolRegistry", () => {
     it("get() returns undefined for unknown tools", () => {
         const { registry } = createContext();
 
-        equal(registry.get("nope"), undefined);
+        equal(registry.__get("nope"), undefined);
     });
 
-    it("invoke() forwards input verbatim and returns the result", async () => {
+    it("executeTool() forwards input verbatim and returns the result", async () => {
         const { context, registry } = createContext();
         context.registerTool({
             name: "echo",
@@ -286,12 +286,16 @@ describe("ToolRegistry", () => {
             execute: async (input: any) => ({ got: input.msg })
         });
 
-        const result: any = await registry.invoke("echo", { msg: "ping" });
+        const result: any = await registry.executeTool("echo", { msg: "ping" });
 
         deepEqual(result, { got: "ping" });
+
+        const resultStr: any = await registry.executeTool("echo", JSON.stringify({ msg: "ping" }));
+
+        deepEqual(resultStr, { got: "ping" });
     });
 
-    it("invoke() defaults input to {}", async () => {
+    it("executeTool() defaults input to {}", async () => {
         const { context, registry } = createContext();
 
         context.registerTool({
@@ -300,10 +304,10 @@ describe("ToolRegistry", () => {
             execute: async (input: any) => Object.keys(input).length
         });
 
-        equal(await registry.invoke("no_arguments"), 0);
+        equal(await registry.executeTool("no_arguments"), 0);
     });
 
-    it("invoke() awaits synchronous return values, too", async () => {
+    it("executeTool() awaits synchronous return values, too", async () => {
         const { context, registry } = createContext();
 
         context.registerTool({
@@ -312,18 +316,18 @@ describe("ToolRegistry", () => {
             execute: () => 2026
         });
 
-        const result = await registry.invoke("sync");
+        const result = await registry.executeTool("sync");
 
         equal(result, 2026);
     });
 
-    it("invoke() rejects when the tool is missing", async () => {
+    it("executeTool() rejects when the tool is missing", async () => {
         const { registry } = createContext();
 
-        await rejects(() => registry.invoke("missing"), /no tool named/);
+        await rejects(() => registry.executeTool("missing"), /is not registered/);
     });
 
-    it("invoke() propagates errors thrown by execute()", async () => {
+    it("executeTool() propagates errors thrown by execute()", async () => {
         const { context, registry } = createContext();
 
         context.registerTool({
@@ -332,10 +336,10 @@ describe("ToolRegistry", () => {
             execute: async () => { throw new Error("Bad error"); }
         });
 
-        await rejects(() => registry.invoke("throws"), /Bad error/);
+        await rejects(() => registry.executeTool("throws"), /Bad error/);
     });
 
-    it("invoke() passes context as second argument", async () => {
+    it("executeTool() passes context as second argument", async () => {
         const { context, registry } = createContext();
 
         let received: unknown = null;
@@ -350,7 +354,7 @@ describe("ToolRegistry", () => {
             }
         });
 
-        await registry.invoke("introspect");
+        await registry.executeTool("introspect");
 
         ok(received instanceof ModelContextClient);
     });
@@ -360,53 +364,53 @@ describe("ToolRegistry", () => {
 
         context.registerTool(defineDummyTool({ description: "original" }));
 
-        const snap = registry.get("do_something")!;
+        const snap = registry.__get("do_something")!;
 
         snap.description = "mutated";
 
         // Re-fetching should give the original
-        equal(registry.get("do_something")?.description, "original");
+        equal(registry.__get("do_something")?.description, "original");
     });
 });
 
 describe("Registry (direct usage)", () => {
     it("set() registers a tool directly", () => {
-        const registry = new Registry();
+        const registry = new ToolRegistry();
 
-        registry.set(defineDummyTool());
+        registry.__set(defineDummyTool());
 
-        equal(registry.has("do_something"), true);
-        equal(registry.get("do_something")?.name, "do_something");
+        equal(registry.__has("do_something"), true);
+        equal(registry.__get("do_something")?.name, "do_something");
     });
 
     it("set() validates the same as ModelContext.registerTool", () => {
-        const registry = new Registry();
+        const registry = new ToolRegistry();
 
         throws(
-            () => registry.set(defineDummyTool({ name: "" })),
+            () => registry.__set(defineDummyTool({ name: "" })),
             (e: any) => e?.name === "InvalidStateError"
         );
 
-        registry.set(defineDummyTool());
+        registry.__set(defineDummyTool());
         throws(
-            () => registry.set(defineDummyTool()),
+            () => registry.__set(defineDummyTool()),
             (e: any) => e?.name === "InvalidStateError"
         );
     });
 
     it("delete() unregisters a tool", () => {
-        const registry = new Registry();
+        const registry = new ToolRegistry();
 
-        registry.set(defineDummyTool());
-        registry.delete("do_something");
+        registry.__set(defineDummyTool());
+        registry.__delete("do_something");
 
-        equal(registry.has("do_something"), false);
+        equal(registry.__has("do_something"), false);
     });
 
     it("delete() is a no-op for unknown tools", () => {
-        const registry = new Registry();
+        const registry = new ToolRegistry();
 
-        doesNotThrow(() => registry.delete("never_existed"));
+        doesNotThrow(() => registry.__delete("never_existed"));
     });
 });
 
@@ -444,6 +448,6 @@ describe("ModelContextClient.requestUserInteraction", () => {
                 await client.requestUserInteraction(async () => "yes")
         });
 
-        equal(await registry.invoke("ask_user"), "yes");
+        equal(await registry.executeTool("ask_user"), "yes");
     });
 });

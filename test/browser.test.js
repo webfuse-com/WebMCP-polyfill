@@ -54,7 +54,7 @@ await runBrowser(
 
         ok(
             objsEqual(
-                WebMCP.list(),
+                navigator.modelContextTesting.listTools(),
                 [
                     {
                         name: "get_products",
@@ -85,12 +85,18 @@ await runBrowser(
             "Invalid list for registered tools"
         );
 
-        ok(WebMCP.has("get_products"), "Did not find 'get_products' tool in registry");
-        ok(!WebMCP.has("unknown_tool"), "Did find never registered tool in registry");
+        ok(
+            navigator.modelContextTesting.__has("get_products"),
+            "Did not find 'get_products' tool in registry"
+        );
+        ok(
+            !navigator.modelContextTesting.__has("unknown_tool"),
+            "Did find never registered tool in registry"
+        );
 
         ok(
             objsEqual(
-                WebMCP.get("get_products"),
+                navigator.modelContextTesting.__get("get_products"),
                 {
                     name: "get_products",
                     title: null,
@@ -105,7 +111,7 @@ await runBrowser(
 
         ok(
             objsEqual(
-                (await WebMCP.invoke("get_products"))[0],
+                (await navigator.modelContextTesting.executeTool("get_products"))[0],
                 {
                     id: "170",
                     name: "Self-Lacing Sneakers"
@@ -115,7 +121,7 @@ await runBrowser(
         );
         ok(
             objsEqual(
-                await WebMCP.invoke("add_product_to_cart", { product_id: "172" }),
+                await navigator.modelContextTesting.executeTool("add_product_to_cart", { product_id: "172" }),
                 {
                     ok: true,
                     product_id: "172"
@@ -124,18 +130,27 @@ await runBrowser(
             "Invalid result adding product via 'add_product_to_cart'"
         );
 
-        WebMCP.delete("get_products");
-        ok(!WebMCP.has("get_products"), "Did still find 'get_products' tool in registry after de-registration");
+        navigator.modelContextTesting.__delete("get_products");
+        ok(
+            !navigator.modelContextTesting.__has("get_products"),
+            "Did still find 'get_products' tool in registry after de-registration"
+        );
 
-        WebMCP.set({
+        navigator.modelContextTesting.__set({
             name: "unknown_tool",
             description: "Does something unpredictable.",
             execute() {
                 return "Hello world!";
             }
         })
-        ok(WebMCP.has("unknown_tool"), "Did still not find 'unknown_tool' tool in registry after registration");
-        ok((await WebMCP.invoke("unknown_tool")) === "Hello world!", "Invalid result received via 'unknown_tool'");
+        ok(
+            navigator.modelContextTesting.__has("unknown_tool"),
+            "Did still not find 'unknown_tool' tool in registry after registration"
+        );
+        ok(
+            (await navigator.modelContextTesting.executeTool("unknown_tool")) === "Hello world!",
+            "Invalid result received via 'unknown_tool'"
+        );
     }, {
         headless: HEADLESS,
         keepalive: KEEPALIVE

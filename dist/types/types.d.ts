@@ -25,19 +25,8 @@ export interface ToolDefinition {
     readOnlyHint: boolean;
     untrustedContentHint: boolean;
 }
-export interface RegisteredTool {
-    name: string;
-    title: string | null;
-    description: string;
-    inputSchema: string;
-    readOnlyHint: boolean;
-    untrustedContentHint: boolean;
-}
-export interface ToolRegistry {
-    list(): RegisteredTool[];
-    set(tool: ModelContextTool): void;
-    get(name: string): RegisteredTool | undefined;
-    has(name: string): boolean;
-    delete(name: string): void;
-    invoke(name: string, input?: object): Promise<unknown>;
+export type RegisteredTool = Omit<ToolDefinition, "execute">;
+export interface ModelContextTesting {
+    listTools(): RegisteredTool[];
+    executeTool(name: string, input?: object): Promise<unknown>;
 }

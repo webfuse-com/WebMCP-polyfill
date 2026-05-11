@@ -1,7 +1,7 @@
 import { type ModelContextRegisterToolOptions, type ModelContextTool } from "./types.ts";
-import { Registry } from "./Registry.ts";
+import { ToolRegistry } from "./ToolRegistry.ts";
 export declare class ModelContext {
     #private;
-    constructor(registry: Registry);
+    constructor(toolRegistry?: ToolRegistry);
     registerTool(tool: ModelContextTool, options?: ModelContextRegisterToolOptions): void;
 }

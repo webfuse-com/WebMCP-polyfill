@@ -1,10 +1,10 @@
 import { type ModelContextRegisterToolOptions, type ModelContextTool } from "./types.ts";
 import { ModelContext } from "./ModelContext.ts";
 import { ModelContextClient } from "./ModelContextClient.ts";
-import { Registry } from "./Registry.ts";
+import { ToolRegistry } from "./ToolRegistry.ts";
 
 
-const NON_SPEC_REGISTRY_IDENTIFIER: string = "WebMCP";
+const NON_SPEC_REGISTRY_IDENTIFIER: string = "modelContextTesting";
 
 
 declare global {
@@ -18,11 +18,11 @@ declare global {
 }
 
 
-const registry = new Registry();
-
 // NON-SPEC:
 
-Object.defineProperty(window, NON_SPEC_REGISTRY_IDENTIFIER, {
+const registry = new ToolRegistry();
+
+Object.defineProperty(window.navigator, NON_SPEC_REGISTRY_IDENTIFIER, {
     value: registry,
     writable: false,
     enumerable: false,
@@ -70,15 +70,15 @@ if(!("modelContext" in navigator)) {
             if(options.signal?.aborted) return;
  
             try {
-                registry.setUnsafe(tool);
+                registry.__setUnsafe(tool);
             } catch {
-                // Ignore deep errors.
+                // Ignore deep errors
             }
  
             if(options.signal) {
                 options.signal.addEventListener(
                     "abort",
-                    () => registry.delete(tool.name),
+                    () => registry.__delete(tool.name),
                     { once: true }
                 );
             }

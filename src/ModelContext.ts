@@ -1,12 +1,12 @@
 import { type ModelContextRegisterToolOptions, type ModelContextTool, type ToolDefinition } from "./types.ts";
-import { Registry } from "./Registry.ts";
+import { ToolRegistry } from "./ToolRegistry.ts";
 
 
 export class ModelContext {
-    readonly #registry: Registry;
+    readonly #registry?: ToolRegistry;
  
-    constructor(registry: Registry) {
-        this.#registry = registry;
+    constructor(toolRegistry?: ToolRegistry) {
+        this.#registry = toolRegistry;
     }
 
     public registerTool(tool: ModelContextTool, options: ModelContextRegisterToolOptions = {}) {
@@ -18,11 +18,11 @@ export class ModelContext {
             return;
         }
 
-        this.#registry.set(tool);
+        this.#registry?.__set(tool);
 
         if(signal) {
             signal.addEventListener("abort", () => {
-                this.#registry.delete(tool.name);
+                this.#registry?.__delete(tool.name);
             }, { once: true });
         }
     }

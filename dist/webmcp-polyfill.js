@@ -3,8 +3,8 @@
   // src/ModelContext.ts
   var ModelContext = class {
     #registry;
-    constructor(registry2) {
-      this.#registry = registry2;
+    constructor(toolRegistry) {
+      this.#registry = toolRegistry;
     }
     registerTool(tool, options = {}) {
       const signal = options ? options.signal : void 0;
@@ -12,10 +12,10 @@
         console.warn(`Tool '${tool.name}' registration was aborted`);
         return;
       }
-      this.#registry.set(tool);
+      this.#registry?.__set(tool);
       if (signal) {
         signal.addEventListener("abort", () => {
-          this.#registry.delete(tool.name);
+          this.#registry?.__delete(tool.name);
         }, { once: true });
       }
     }
@@ -28,13 +28,13 @@
     }
   };
 
-  // src/Registry.ts
+  // src/ToolRegistry.ts
   var TOOL_NAME_REGEX = /^[A-Za-z0-9_\-.]+$/;
-  var Registry = class _Registry {
-    static isValidToolName(name) {
+  var ToolRegistry = class _ToolRegistry {
+    static #isValidToolName(name) {
       return typeof name === "string" && name.length >= 1 && name.length <= 128 && TOOL_NAME_REGEX.test(name);
     }
-    static throwDOMException(name, message) {
+    static #throwDOMException(name, message) {
       if ("DOMException" in globalThis) throw new globalThis.DOMException(message, name);
       const err = new Error(message);
       err.name = name;
@@ -48,14 +48,7 @@
       return rest;
     }
     #toolMap = /* @__PURE__ */ new Map();
-    list() {
-      const toolDefinitionSnapshots = [];
-      for (const toolDefinition of this.#toolMap.values()) {
-        toolDefinitionSnapshots.push(_Registry.#snapshotToolDefinition(toolDefinition));
-      }
-      return toolDefinitionSnapshots;
-    }
-    setUnsafe(tool) {
+    __setUnsafe(tool) {
       let serializedInputSchema = "";
       if (tool.inputSchema !== void 0) {
         serializedInputSchema = JSON.stringify(tool.inputSchema);
@@ -77,54 +70,62 @@
         untrustedContentHint
       });
     }
-    set(tool) {
+    __set(tool) {
       if (typeof tool.name !== "string" || tool.name.length === 0) {
-        _Registry.throwDOMException(
+        _ToolRegistry.#throwDOMException(
           "InvalidStateError",
           "Tool name must be a non-empty string"
         );
       }
       if (typeof tool.description !== "string" || tool.description.length === 0) {
-        _Registry.throwDOMException(
+        _ToolRegistry.#throwDOMException(
           "InvalidStateError",
           "Tool description must be a non-empty string"
         );
       }
       if (this.#toolMap.has(tool.name)) {
-        _Registry.throwDOMException(
+        _ToolRegistry.#throwDOMException(
           "InvalidStateError",
           `Tool named '${tool.name}' is already registered`
         );
       }
-      if (!_Registry.isValidToolName(tool.name)) {
-        _Registry.throwDOMException(
+      if (!_ToolRegistry.#isValidToolName(tool.name)) {
+        _ToolRegistry.#throwDOMException(
           "InvalidStateError",
           `Invalid tool name '${tool.name}' (must only use 1-128 ASCII alphanumeric characters, '_', '-', or '.'`
         );
       }
-      this.setUnsafe(tool);
+      this.__setUnsafe(tool);
     }
-    get(name) {
+    __get(name) {
       const toolDefinition = this.#toolMap.get(name);
-      return toolDefinition ? _Registry.#snapshotToolDefinition(toolDefinition) : void 0;
+      return toolDefinition ? _ToolRegistry.#snapshotToolDefinition(toolDefinition) : void 0;
     }
-    has(name) {
+    __has(name) {
       return this.#toolMap.has(name);
     }
-    delete(name) {
+    __delete(name) {
       this.#toolMap.delete(name);
     }
-    async invoke(name, input = {}) {
+    listTools() {
+      const toolDefinitionSnapshots = [];
+      for (const toolDefinition of this.#toolMap.values()) {
+        toolDefinitionSnapshots.push(_ToolRegistry.#snapshotToolDefinition(toolDefinition));
+      }
+      return toolDefinitionSnapshots;
+    }
+    async executeTool(name, input = {}) {
       const toolDefinition = this.#toolMap.get(name);
-      if (!toolDefinition) throw new Error(`Registry: no tool named '${name}' is registered.`);
-      return toolDefinition.execute(input, new ModelContextClient());
+      if (!toolDefinition) throw new Error(`Tool '${name}' is not registered`);
+      const parsedInput = typeof input === "string" ? JSON.parse(input) : input;
+      return toolDefinition.execute(parsedInput, new ModelContextClient());
     }
   };
 
   // src/api.browser.ts
-  var NON_SPEC_REGISTRY_IDENTIFIER = "WebMCP";
-  var registry = new Registry();
-  Object.defineProperty(window, NON_SPEC_REGISTRY_IDENTIFIER, {
+  var NON_SPEC_REGISTRY_IDENTIFIER = "modelContextTesting";
+  var registry = new ToolRegistry();
+  Object.defineProperty(window.navigator, NON_SPEC_REGISTRY_IDENTIFIER, {
     value: registry,
     writable: false,
     enumerable: false,
@@ -158,13 +159,13 @@
         nativeRegisterTool(tool, options);
         if (options.signal?.aborted) return;
         try {
-          registry.setUnsafe(tool);
+          registry.__setUnsafe(tool);
         } catch {
         }
         if (options.signal) {
           options.signal.addEventListener(
             "abort",
-            () => registry.delete(tool.name),
+            () => registry.__delete(tool.name),
             { once: true }
           );
         }
