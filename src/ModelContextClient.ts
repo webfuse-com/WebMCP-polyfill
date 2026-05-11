@@ -1,4 +1,4 @@
-import { type UserInteractionCallback } from "./types.js";
+import { type UserInteractionCallback } from "./types.ts";
 
 
 export class ModelContextClient {

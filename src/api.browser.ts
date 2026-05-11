@@ -1,6 +1,6 @@
-import { ModelContext } from "./ModelContext.js";
-import { ModelContextClient } from "./ModelContextClient.js";
-import { Registry } from "./Registry.js";
+import { ModelContext } from "./ModelContext.ts";
+import { ModelContextClient } from "./ModelContextClient.ts";
+import { Registry } from "./Registry.ts";
 
 
 const NON_SPEC_REGISTRY_IDENTIFIER: string = "WebMCP";
@@ -17,9 +17,11 @@ declare global {
 }
 
 
-// SPEC:
+const registry = new Registry();
+const modelContext = new ModelContext(registry);
 
-const modelContext = new ModelContext();
+
+// SPEC:
 
 Object.defineProperty(window.navigator, "modelContext", {
     value: modelContext,
@@ -45,7 +47,7 @@ Object.defineProperty(window, "ModelContextClient", {
 // NON-SPEC:
 
 Object.defineProperty(window, NON_SPEC_REGISTRY_IDENTIFIER, {
-    value: new Registry(modelContext),
+    value: registry,
     writable: false,
     enumerable: false,
     configurable: false

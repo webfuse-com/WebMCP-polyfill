@@ -1,4 +1,4 @@
-import { type ModelContextClient } from "./ModelContextClient.js";
+import { type ModelContextClient } from "./ModelContextClient.ts";
 
 
 // SPEC:
