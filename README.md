@@ -84,14 +84,16 @@ interface ModelContextTesting extends EventTarget {
 
 ### Use Cases
 
+<img src="./.github/figure.svg" alt="The WebMCP polyfill bridges web applications and models" width="380">
+
 #### Model-driven Browser Automation
 
 Use WebMCP tools through a browser automation framework (e.g., [Playwright](https://playwright.dev)), including legacy browsers.
 
-#### First-class access from browser extensions
+#### First-Class Access from Browser Extensions
 
 Use WebMCP tools from native browser extensions.
 
-#### Webpage MCP Introspection
+#### Web Application MCP Introspection
 
 Reuse WebMCP tools for in-page script execution realms.
