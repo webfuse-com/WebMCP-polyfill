@@ -6,15 +6,15 @@
 - `ModelContextClient`
 - `navigator.modelContext`
 
-### Integrate
+## Integrate
 
-#### Browser
+### Browser
 
 ``` html
 <script src="https://cdn.jsdelivr.net/gh/webfuse-com/WebMCP-polyfill@main/dist/webmcp-polyfill.js"></script>
 ```
 
-#### Module
+### Module
 
 ``` console
 npm install webfuse-com/WebMCP-polyfill
@@ -24,7 +24,7 @@ npm install webfuse-com/WebMCP-polyfill
 import { ModelContext, ModelContextClient } from "@webfuse-com/webmcp-polyfill";
 ```
 
-### Usage
+## Usage
 
 ``` js
 navigator.modelContext
@@ -54,7 +54,7 @@ navigator.modelContext
   });
 ```
 
-#### WebMCP Registry `non-spec`
+### WebMCP Registry `non-spec`
 
 The experimental `navigator.modelContextTesting` global allows maintaining an [_AI agent queue_](https://webmachinelearning.github.io/webmcp/#ai-agent-queue) right in the web page's script execution scope.
 
@@ -82,18 +82,16 @@ interface ModelContextTesting extends EventTarget {
 }
 ```
 
-### Use Cases
+## Use Cases
 
-<img src="./.github/figure.svg" alt="The WebMCP polyfill bridges web applications and models" width="380">
-
-#### Model-driven Browser Automation
+### Model-driven Browser Automation
 
 Use WebMCP tools through a browser automation framework (e.g., [Playwright](https://playwright.dev)), including legacy browsers.
 
-#### First-Class Access from Browser Extensions
+### First-Class Access from Browser Extensions
 
 Use WebMCP tools from native browser extensions.
 
-#### Web Application MCP Introspection
+### Web Application MCP Introspection
 
 Reuse WebMCP tools for in-page script execution realms.
