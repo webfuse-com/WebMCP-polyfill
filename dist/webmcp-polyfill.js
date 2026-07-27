@@ -6,7 +6,7 @@
     constructor(toolRegistry) {
       this.#registry = toolRegistry;
     }
-    registerTool(tool, options = {}) {
+    async registerTool(tool, options = {}) {
       const signal = options ? options.signal : void 0;
       if (signal?.aborted) {
         console.warn(`Tool '${tool.name}' registration was aborted`);
@@ -164,8 +164,8 @@
         const nativeRegisterTool = nativeModelContext.registerTool.bind(document.modelContext);
         Object.defineProperty(nativeModelContext, "registerTool", {
           value: function(tool, options = {}) {
-            nativeRegisterTool(tool, options);
-            if (options.signal?.aborted) return;
+            const nativeResult = nativeRegisterTool(tool, options);
+            if (options.signal?.aborted) return nativeResult;
             try {
               registry.__setUnsafe(tool);
             } catch {
@@ -177,6 +177,7 @@
                 { once: true }
               );
             }
+            return nativeResult;
           },
           writable: false,
           enumerable: true,

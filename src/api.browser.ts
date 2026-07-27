@@ -67,16 +67,17 @@ if(!(NON_SPEC_REGISTRY_IDENTIFIER in navigator)) {
         
             Object.defineProperty(nativeModelContext, "registerTool", {
                 value: function(tool: ModelContextTool, options: ModelContextRegisterToolOptions = {}) {
-                    nativeRegisterTool(tool, options);
-        
-                    if(options.signal?.aborted) return;
-        
+                    // Native 'registerTool()' now returns a promise; forward it verbatim.
+                    const nativeResult = nativeRegisterTool(tool, options);
+
+                    if(options.signal?.aborted) return nativeResult;
+
                     try {
                         registry.__setUnsafe(tool);
                     } catch {
                         // Ignore deep errors
                     }
-        
+
                     if(options.signal) {
                         options.signal.addEventListener(
                             "abort",
@@ -84,6 +85,8 @@ if(!(NON_SPEC_REGISTRY_IDENTIFIER in navigator)) {
                             { once: true }
                         );
                     }
+
+                    return nativeResult;
                 },
                 writable: false,
                 enumerable: true,

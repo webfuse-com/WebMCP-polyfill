@@ -9,7 +9,7 @@ export class ModelContext {
         this.#registry = toolRegistry;
     }
 
-    public registerTool(tool: ModelContextTool, options: ModelContextRegisterToolOptions = {}) {
+    public async registerTool(tool: ModelContextTool, options: ModelContextRegisterToolOptions = {}): Promise<void> {
         const signal: AbortSignal | undefined = options ? options.signal : undefined;
 
         if(signal?.aborted) {

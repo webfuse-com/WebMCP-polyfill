@@ -4,7 +4,7 @@ var ModelContext = class {
   constructor(toolRegistry) {
     this.#registry = toolRegistry;
   }
-  registerTool(tool, options = {}) {
+  async registerTool(tool, options = {}) {
     const signal = options ? options.signal : void 0;
     if (signal?.aborted) {
       console.warn(`Tool '${tool.name}' registration was aborted`);

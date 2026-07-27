@@ -1,5 +1,5 @@
 import { describe, it } from "node:test";
-import { ok, equal, deepEqual, throws, doesNotThrow, rejects } from "node:assert/strict";
+import { ok, equal, deepEqual, throws, doesNotThrow, rejects, doesNotReject } from "node:assert/strict";
 
 import { type ModelContextTool } from "../src/types.ts";
 import { ModelContext } from "../src/ModelContext.ts";
@@ -101,99 +101,108 @@ describe("ModelContext.registerTool (success)", () => {
         equal(plain.untrustedContentHint, false);
     });
 
-    it("Accepts all valid names", () => {
+    it("Accepts all valid names", async () => {
         const { context } = createContext();
 
         for(const name of [
             "a", "A1", "with_underscore", "with-dash", "with.dot", "a".repeat(128)
         ]) {
-            doesNotThrow(
-                () => context.registerTool(defineDummyTool({ name })),
+            await doesNotReject(
+                context.registerTool(defineDummyTool({ name })),
                 `expected name "${name}" to be valid`
             );
         }
     });
+
+    it("Returns a promise that resolves on success", async () => {
+        const { context } = createContext();
+
+        const result = context.registerTool(defineDummyTool());
+
+        ok(typeof result?.then === "function", "registerTool did not return a thenable");
+        equal(await result, undefined);
+    });
 });
 
 describe("ModelContext.registerTool (failure: validation)", () => {
-    it("Throws on duplicate name", () => {
+    it("Rejects on duplicate name", async () => {
         const { context } = createContext();
 
-        context.registerTool(defineDummyTool());
+        await context.registerTool(defineDummyTool());
 
-        throws(
-            () => context.registerTool(defineDummyTool()),
+        await rejects(
+            context.registerTool(defineDummyTool()),
             (e: any) => e?.name === "InvalidStateError"
         );
     });
 
-    it("Throws on empty name", () => {
+    it("Rejects on empty name", async () => {
         const { context } = createContext();
 
-        throws(
-            () => context.registerTool(defineDummyTool({ name: "" })),
+        await rejects(
+            context.registerTool(defineDummyTool({ name: "" })),
             (e: any) => e?.name === "InvalidStateError"
         );
     });
 
-    it("Throws on empty description", () => {
+    it("Rejects on empty description", async () => {
         const { context } = createContext();
 
-        throws(
-            () => context.registerTool(defineDummyTool({ description: "" })),
+        await rejects(
+            context.registerTool(defineDummyTool({ description: "" })),
             (e: any) => e?.name === "InvalidStateError"
         );
     });
 
-    it("Throws on invalid name", () => {
+    it("Rejects on invalid name", async () => {
         const { context } = createContext();
 
         for(const bad of [
             "has space", "has🙂", "has/slash", "has,comma"
         ]) {
-            throws(
-                () => context.registerTool(defineDummyTool({ name: bad })),
+            await rejects(
+                context.registerTool(defineDummyTool({ name: bad })),
                 (e: any) => e?.name === "InvalidStateError",
                 `expected name "${bad}" to be rejected`
             );
         }
     });
 
-    it("Throws on excessive name", () => {
+    it("Rejects on excessive name", async () => {
         const { context } = createContext();
 
-        throws(
-            () => context.registerTool(defineDummyTool({ name: "a".repeat(129) })),
+        await rejects(
+            context.registerTool(defineDummyTool({ name: "a".repeat(129) })),
             (e: any) => e?.name === "InvalidStateError"
         );
     });
 
-    it("Throws when input schema serializes to undefined", () => {
+    it("Rejects when input schema serializes to undefined", async () => {
         const { context } = createContext();
         const schema: any = { toJSON() { return undefined; } };
 
-        throws(
-            () => context.registerTool(defineDummyTool({ inputSchema: schema })),
+        await rejects(
+            context.registerTool(defineDummyTool({ inputSchema: schema })),
             TypeError
         );
     });
 
-    it("Re-throws on circular input schema", () => {
+    it("Rejects on circular input schema", async () => {
         const { context } = createContext();
         const circ: any = {};
 
         circ.self = circ;
 
-        throws(
-            () => context.registerTool(defineDummyTool({ inputSchema: circ })),
+        await rejects(
+            context.registerTool(defineDummyTool({ inputSchema: circ })),
             TypeError
         );
     });
 
-    it("Does not validate execute callable upfront (trusts caller)", () => {
+    it("Does not validate execute callable upfront (trusts caller)", async () => {
         const { context, registry } = createContext();
 
-        doesNotThrow(() =>
+        await doesNotReject(() =>
             context.registerTool({
                 name: "foo",
                 description: "'foo' is a metasyntactic variable",
@@ -242,15 +251,15 @@ describe("ModelContext.registerTool (failure: abort signal)", () => {
         equal(registry.__has("permanent"), true);
     });
 
-    it("Allows the same name to be re-registered after abort", () => {
+    it("Allows the same name to be re-registered after abort", async () => {
         const { context, registry } = createContext();
         const ac = new AbortController();
 
-        context.registerTool(defineDummyTool(), { signal: ac.signal });
+        await context.registerTool(defineDummyTool(), { signal: ac.signal });
 
         ac.abort();
 
-        doesNotThrow(() => context.registerTool(defineDummyTool()));
+        await doesNotReject(context.registerTool(defineDummyTool()));
         equal(registry.__has("do_something"), true);
     });
 });
