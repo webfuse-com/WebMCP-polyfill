@@ -4,7 +4,7 @@
 
 - `ModelContext`
 - `ModelContextClient`
-- `navigator.modelContext`
+- `document.modelContext`
 
 ## Integrate
 
@@ -27,7 +27,7 @@ import { ModelContext, ModelContextClient } from "@webfuse-com/webmcp-polyfill";
 ## Usage
 
 ``` js
-navigator.modelContext
+document.modelContext
   .registerTool({
     name: "get_products",
     description: "List all products in the current page.",
@@ -35,7 +35,7 @@ navigator.modelContext
     execute: () => state.getProducts()
   });
 
-navigator.modelContext
+document.modelContext
   .registerTool({
     name: "add_product_to_cart",
     description: "Add a product to the user's shopping cart.",

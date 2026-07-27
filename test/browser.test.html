@@ -37,7 +37,7 @@
             };
         </script>
         <script>
-            navigator.modelContext
+            document.modelContext
                 .registerTool({
                     name: "get_products",
                     description: "List all products in the current page.",
@@ -45,7 +45,7 @@
                     execute: () => state.getProducts()
                 });
 
-            navigator.modelContext
+            document.modelContext
                 .registerTool({
                     name: "add_product_to_cart",
                     description: "Add a product to the user's shopping cart.",
