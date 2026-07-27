@@ -138,9 +138,9 @@
       enumerable: false,
       configurable: false
     });
-    if (!("modelContext" in navigator)) {
+    if (!("modelContext" in document)) {
       const modelContext = new ModelContext(registry);
-      Object.defineProperty(navigator, "modelContext", {
+      Object.defineProperty(document, "modelContext", {
         value: modelContext,
         writable: false,
         enumerable: true,
@@ -159,9 +159,9 @@
         configurable: false
       });
     } else {
-      const nativeModelContext = navigator.modelContext;
+      const nativeModelContext = document.modelContext;
       if (Object.getOwnPropertyDescriptor(nativeModelContext, "registerTool")?.configurable === false) {
-        const nativeRegisterTool = nativeModelContext.registerTool.bind(navigator.modelContext);
+        const nativeRegisterTool = nativeModelContext.registerTool.bind(document.modelContext);
         Object.defineProperty(nativeModelContext, "registerTool", {
           value: function(tool, options = {}) {
             nativeRegisterTool(tool, options);

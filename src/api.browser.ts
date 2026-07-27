@@ -8,7 +8,7 @@ const NON_SPEC_REGISTRY_IDENTIFIER: string = "modelContextTesting";
 
 
 declare global {
-    interface Navigator {
+    interface Document {
         readonly modelContext: ModelContext;
     }
     interface Window {
@@ -30,12 +30,12 @@ if(!(NON_SPEC_REGISTRY_IDENTIFIER in navigator)) {
         configurable: false
     });
 
-    if(!("modelContext" in navigator)) {
+    if(!("modelContext" in document)) {
         const modelContext = new ModelContext(registry);
 
         // SPEC:
 
-        Object.defineProperty(navigator, "modelContext", {
+        Object.defineProperty(document, "modelContext", {
             value: modelContext,
             writable: false,
             enumerable: true,
@@ -59,11 +59,11 @@ if(!(NON_SPEC_REGISTRY_IDENTIFIER in navigator)) {
         // Wrap 'registerTool()' so the non-spec registry (polyfill) still observes it.
         // Skip extensive checks, but mirror native result.
 
-        const nativeModelContext: ModelContext = navigator.modelContext;
+        const nativeModelContext: ModelContext = document.modelContext;
 
         if(Object.getOwnPropertyDescriptor(nativeModelContext, "registerTool")?.configurable === false) {
             const nativeRegisterTool = nativeModelContext.registerTool
-                .bind(navigator.modelContext);
+                .bind(document.modelContext);
         
             Object.defineProperty(nativeModelContext, "registerTool", {
                 value: function(tool: ModelContextTool, options: ModelContextRegisterToolOptions = {}) {
