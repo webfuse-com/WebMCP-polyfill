@@ -26,8 +26,10 @@ import { ModelContext, ModelContextClient } from "@webfuse-com/webmcp-polyfill";
 
 ## Usage
 
+`registerTool()` returns a promise: `await` it and handle registration failures via `catch`.
+
 ``` js
-document.modelContext
+await document.modelContext
   .registerTool({
     name: "get_products",
     description: "List all products in the current page.",
@@ -35,23 +37,27 @@ document.modelContext
     execute: () => state.getProducts()
   });
 
-document.modelContext
-  .registerTool({
-    name: "add_product_to_cart",
-    description: "Add a product to the user's shopping cart.",
-    inputSchema: {
-      type: "object",
-      properties: { product_id: { type: "string" } },
-      required: [ "product_id" ]
-    },
-    execute: async ({ product_id }) => {
-      await state.cart.addToCart(product_id);
-      return {
-        ok: true,
-        product_id
-      };
-    }
-  });
+try {
+  await document.modelContext
+    .registerTool({
+      name: "add_product_to_cart",
+      description: "Add a product to the user's shopping cart.",
+      inputSchema: {
+        type: "object",
+        properties: { product_id: { type: "string" } },
+        required: [ "product_id" ]
+      },
+      execute: async ({ product_id }) => {
+        await state.cart.addToCart(product_id);
+        return {
+          ok: true,
+          product_id
+        };
+      }
+    });
+} catch (e) {
+  console.error("Tool registration failed:", e);
+}
 ```
 
 ### WebMCP Registry `non-spec`
